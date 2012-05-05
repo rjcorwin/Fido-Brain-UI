@@ -1,0 +1,16 @@
+<?php
+
+function fido_ui_menu() {
+  $items['data'] = array(
+    'page callback' => 'fido_ui_page_data',
+    'access callback' => TRUE
+  );
+return $items;
+}
+
+
+function fido_ui_page_data() {
+  $curi = "10.1.10.28:80/rj";
+//  drupal_add_js(array("fido_ui" => array("curi", $curi)), "setting");
+//  return file_get_contents("/sites/all/modules/fido_ui/data.html");
+}
