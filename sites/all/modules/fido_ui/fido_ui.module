@@ -1,16 +1,77 @@
 <?php
+function fido_ui_init() {
 
-function fido_ui_menu() {
-  $items['data'] = array(
-    'page callback' => 'fido_ui_page_data',
-    'access callback' => TRUE
-  );
-return $items;
+if (arg(0) == "node" && arg(1) == 2 && arg(3) != 'edit') {
+  $supported_fields = array('CumulativeEnergyUse', 'InsideTemp', 'OutsideTemp', 'Sunlight');
+  foreach($supported_fields as $field_name) {
+    if(array_key_exists($field_name, $_POST)) {
+      
+      // MONTH
+      if(array_key_exists("start-choice-month", $_POST)) {
+        $start_choice_month = $_POST['start-choice-month'];
+      }
+      else {
+        $start_choice_month = "01";
+      }
+      
+      if(array_key_exists("end-choice-month", $_POST)) {
+        $end_choice_month = $_POST['end-choice-month'];
+      }
+      else {
+        $end_choice_month = "12";
+      }
+      
+      // DAY
+      if(array_key_exists("start-choice-day", $_POST)) {
+        $start_choice_day = $_POST['start-choice-day'];
+        if(strlen($start_choice_day) == 1) {
+          $start_choice_day = "0" . $start_choice_day;
+        }
+      }
+      else {
+        $start_choice_day = "01";
+      }
+      
+      if(array_key_exists("end-choice-day", $_POST)) {
+        $end_choice_day = $_POST['end-choice-day'];
+        if(strlen($end_choice_day) == 1) {
+          $end_choice_day = "0" . $end_choice_day;
+        }
+      }
+      else {
+        $end_choice_day = "31";
+      }
+      
+      // YEAR
+      if(array_key_exists("start-choice-year", $_POST)) {
+        $start_choice_year = $_POST['start-choice-year'];
+      }
+      else {
+        $start_choice_year = "2000";
+      }
+      
+      if(array_key_exists("end-choice-year", $_POST)) {
+        $end_choice_year = $_POST['end-choice-year'];
+      }
+      else {
+        $end_choice_year = "2001";
+      }
+      
+      $start = $start_choice_year . "_" . $start_choice_month . "_" . $start_choice_day . "_0000";
+      $end = $end_choice_year . "_" . $end_choice_month . "_" . $end_choice_day . "_2400";
+      $query = 'http://10.1.10.28:80/flounder/_design/' . $field_name . '/_view/by-minute?startkey="' .  $start . '"&endkey="' . $end . '"';
+      $response = file_get_contents($query);
+      $object = json_decode($response);
+      drupal_add_js(array('fido' => array($field_name => $object)), "setting");
+    }
+  }
+  drupal_add_js(array('fidoSettings' => array('pointStart' => 
+    array($_POST['start-choice-year'], $_POST['start-choice-month'], $_POST['start-choice-day'])
+    )), "setting");
+  drupal_add_js("sites/all/modules/fido_ui/page-data.js", array("type" => "file", "scope" => "footer"));
+  drupal_add_js("http://code.highcharts.com/highcharts.js", array("type" => "file", "scope" => "header"));
+  drupal_add_js("http://code.highcharts.com/modules/exporting.js", array("type" => "file", "scope" => "header"));
+
 }
 
-
-function fido_ui_page_data() {
-  $curi = "10.1.10.28:80/rj";
-//  drupal_add_js(array("fido_ui" => array("curi", $curi)), "setting");
-//  return file_get_contents("/sites/all/modules/fido_ui/data.html");
 }
